@@ -4,7 +4,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from PIL import Image
 from nicegui import ui
-from flask import send_file  # Adicionar importação para servir arquivos estáticos
+
 
 
 # Função para redimensionar a imagem mantendo a proporção e alta qualidade
