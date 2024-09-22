@@ -16,7 +16,7 @@ def redimensionar_imagem(caminho_imagem, largura_max=900, altura_max=900):
 
 # Função para gerar o relatório PDF com grupos de fotos e títulos
 def gerar_relatorio_pdf(titulo_principal, grupos_fotos):
-    nome_pdf = "static/relatorio_fotografico.pdf"
+    nome_pdf = f"uploads/relatorio_fotografico.pdf"
     c = canvas.Canvas(nome_pdf, pagesize=A4)
     largura_pagina, altura_pagina = A4
     dpi = 300  # Define uma resolução de 300 DPI para garantir alta qualidade
@@ -174,7 +174,7 @@ def iniciar_interface():
 
         with ui.card():
             # ui.link(f'Clique aqui para baixar o PDF gerado', pdf_gerado)
-            ui.link(f'Clique aqui para baixar o PDF gerado', '/static/relatorio_fotografico.pdf')
+            ui.link(f'Clique aqui para baixar o PDF gerado', f'/{pdf_gerado}')
         
             ui.notify(f"Relatório PDF '{pdf_gerado}' gerado com sucesso!")
 
