@@ -4,6 +4,8 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from PIL import Image
 from nicegui import ui
+from flask import send_file  # Adicionar importação para servir arquivos estáticos
+
 
 # Função para redimensionar a imagem mantendo a proporção e alta qualidade
 def redimensionar_imagem(caminho_imagem, largura_max=900, altura_max=900):
@@ -174,8 +176,8 @@ def iniciar_interface():
 
         with ui.card():
             # ui.link(f'Clique aqui para baixar o PDF gerado', pdf_gerado)
-            ui.link(f'Clique aqui para baixar o PDF gerado', f'/{pdf_gerado}')
-        
+           # ui.link(f'Clique aqui para baixar o PDF gerado', '/download_pdf')
+            ui.download(pdf_gerado, 'Clique aqui para baixar o PDF gerado')
             ui.notify(f"Relatório PDF '{pdf_gerado}' gerado com sucesso!")
 
     # Função para resetar as pastas de uploads e grupos
