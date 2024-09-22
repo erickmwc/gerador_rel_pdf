@@ -192,7 +192,7 @@ def iniciar_interface():
         #with ui.card():
             # ui.link(f'Clique aqui para baixar o PDF gerado', pdf_gerado)
             # ui.link(f'Clique aqui para baixar o PDF gerado', '/download_pdf')
-        ui.download(pdf_gerado, 'Relatório Fotográfico')
+        ui.download(pdf_gerado, 'Relatório Fotografico')
         ui.notify(f"Relatório PDF '{pdf_gerado}' gerado com sucesso!")
 
     # Função para resetar as pastas de uploads e grupos
