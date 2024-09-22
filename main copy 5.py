@@ -6,6 +6,7 @@ from PIL import Image
 from nicegui import ui
 
 
+
 # Função para redimensionar a imagem mantendo a proporção e alta qualidade
 def redimensionar_imagem(caminho_imagem, largura_max=900, altura_max=900):
     with Image.open(caminho_imagem) as img:
@@ -23,38 +24,37 @@ def desenhar_cabecalho(c, largura_pagina, altura_pagina, caminho_imagem_cabecalh
 
     # Se houver uma imagem de cabeçalho, desenhá-la
     if caminho_imagem_cabecalho:
-        c.drawImage(caminho_imagem_cabecalho, 10, altura_pagina - 70, width=550, height=70)
-    
+        c.drawImage(caminho_imagem_cabecalho, 20, altura_pagina - 70, width=500, height=60)
 
 
 # Função para gerar o relatório PDF com grupos de fotos e títulos
 def gerar_relatorio_pdf(titulo_principal, grupos_fotos):
     nome_pdf = f"uploads/relatorio_fotografico.pdf"
-    caminho_imagem_cabecalho = "LogoCodevasf.png"  # Caminho para a imagem do cabeçalho
+    caminho_imagem_cabecalho = "LogoCodevasf.png" 
+
     c = canvas.Canvas(nome_pdf, pagesize=A4)
     largura_pagina, altura_pagina = A4
     dpi = 300  # Define uma resolução de 300 DPI para garantir alta qualidade
 
-    # Desenhar o cabeçalho na primeira página com a imagem
     desenhar_cabecalho(c, largura_pagina, altura_pagina, caminho_imagem_cabecalho)
+    y_pos = altura_pagina - 120  # Começar abaixo do cabeçalho
 
-    # Ajustar o y_pos para garantir que o conteúdo fique abaixo do cabeçalho
-    y_pos = altura_pagina - 110  # Começar abaixo do cabeçalho e garantir mais espaçamento
-
-    # Adicionar o título principal
+    # Adicionar título principal
     c.setFont("Helvetica-Bold", 20)
     c.drawCentredString(largura_pagina / 2, y_pos, titulo_principal)
-    y_pos -= 30  # Ajustar mais o y_pos para o próximo conteúdo
+    y_pos -= 40  # Ajustar mais o y_pos para o próximo conteúdo
 
+#    y_pos = altura_pagina - 100  # Posição inicial, ajustada para começar após o título principal
+    
     for grupo in grupos_fotos:
         titulo_grupo = grupo['titulo']
         fotos = grupo['fotos']
 
         # Verificar se há espaço para pelo menos uma linha de imagens junto com o título
-        if y_pos - 60 < 140:  # Se não houver espaço suficiente para o título + imagens
+        if y_pos - 60 < 160:  # Se não houver espaço suficiente para o título + imagens
             c.showPage()  # Adicionar uma nova página
             desenhar_cabecalho(c, largura_pagina, altura_pagina, caminho_imagem_cabecalho)  # Redesenhar o cabeçalho
-            y_pos = altura_pagina - 110  # Resetar y_pos para começar abaixo do cabeçalho
+            y_pos = altura_pagina - 120  # Resetar y_pos para a nova página
 
         # Adicionar o título do grupo
         c.setFont("Helvetica-Bold", 14)
@@ -89,8 +89,8 @@ def gerar_relatorio_pdf(titulo_principal, grupos_fotos):
                 c.rect(x_inicial - 10, y_final_bloco - 10, x_final - x_inicial + 20, y_inicial_bloco - y_final_bloco + 30)
 
                 c.showPage()  # Adicionar uma nova página
-                desenhar_cabecalho(c, largura_pagina, altura_pagina, caminho_imagem_cabecalho)  # Redesenhar o cabeçalho
-                y_pos = altura_pagina - 130  # Resetar y_pos para começar abaixo do cabeçalho
+                desenhar_cabecalho(c, largura_pagina, altura_pagina, caminho_imagem_cabecalho)  # Redesenhar o cabeçalho,
+                y_pos = altura_pagina - 50  # Resetar y_pos para a nova página
                 x_pos = x_inicial  # Resetar posição horizontal
 
                 # Redefinir y_inicial_bloco para a nova página
@@ -102,18 +102,22 @@ def gerar_relatorio_pdf(titulo_principal, grupos_fotos):
 
             # Quando 3 imagens forem adicionadas, resetar a linha
             if (i + 1) % 3 == 0:
-                y_pos -= linha_altura_max + 50  # Mover para a próxima linha
+                y_pos -= linha_altura_max + 60  # Mover para a próxima linha
                 x_pos = x_inicial  # Resetar a posição horizontal
                 linha_altura_max = 0  # Resetar altura máxima para a nova linha
 
         # Após desenhar todas as imagens do grupo, definir a posição inferior do retângulo
-        y_final_bloco = y_pos - linha_altura_max   # Ponto inferior do bloco
+        y_final_bloco = y_pos - linha_altura_max - 20  # Ponto inferior do bloco
 
         # Desenhar o retângulo ao redor do bloco de imagens (contendo todas as imagens do grupo)
-        c.rect(x_inicial - 10, y_final_bloco - 10, x_final - x_inicial + 20, y_inicial_bloco - y_final_bloco + 20)
+        c.rect(x_inicial - 10, y_final_bloco - 10, x_final - x_inicial + 20, y_inicial_bloco - y_final_bloco + 30)
 
         # Atualizar a posição para o próximo grupo
         y_pos = y_final_bloco - 60
+
+
+
+
 
     # Finalizar e salvar o PDF
     c.save()
@@ -189,11 +193,11 @@ def iniciar_interface():
         # Gerar o relatório PDF
         pdf_gerado = gerar_relatorio_pdf(titulo_principal, grupos_fotos)
 
-        #with ui.card():
+        with ui.card():
             # ui.link(f'Clique aqui para baixar o PDF gerado', pdf_gerado)
-            # ui.link(f'Clique aqui para baixar o PDF gerado', '/download_pdf')
-        ui.download(pdf_gerado, 'Relatório Fotográfico')
-        ui.notify(f"Relatório PDF '{pdf_gerado}' gerado com sucesso!")
+           # ui.link(f'Clique aqui para baixar o PDF gerado', '/download_pdf')
+            ui.download(pdf_gerado, 'Clique aqui para baixar o PDF gerado')
+            ui.notify(f"Relatório PDF '{pdf_gerado}' gerado com sucesso!")
 
     # Função para resetar as pastas de uploads e grupos
     def resetar_projeto():
@@ -206,7 +210,6 @@ def iniciar_interface():
 
     # Interface gráfica usando NiceGUI
     ui.label('Gerador de Relatório Fotográfico').classes('text-2xl font-bold')
-
 
     # Input para o título principal
     with ui.card():
