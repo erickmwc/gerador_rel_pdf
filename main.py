@@ -170,9 +170,12 @@ def iniciar_interface():
 
         # Gerar o relatório PDF
         pdf_gerado = gerar_relatorio_pdf(titulo_principal, grupos_fotos)
+        pdf_gerado = os.path.join(os.getcwd(), "relatorio_fotografico.pdf")
 
         with ui.card():
             ui.link(f'Clique aqui para baixar o PDF gerado', pdf_gerado)
+            with ui.card():
+               ui.link(f'Clique aqui para baixar o PDF gerado', f'/static/{pdf_gerado}')
             ui.notify(f"Relatório PDF '{pdf_gerado}' gerado com sucesso!")
 
     # Função para resetar as pastas de uploads e grupos
@@ -205,6 +208,7 @@ def iniciar_interface():
     # Botão para gerar o PDF
     with ui.card():
         ui.button('Gerar PDF', on_click=gerar_pdf).classes('bg-green-500 text-white')
+    
 
     # Botão para resetar as pastas de uploads e grupos
     with ui.card():
