@@ -5,6 +5,7 @@ from reportlab.pdfgen import canvas
 from PIL import Image
 from nicegui import ui
 import threading
+import asyncio
 
 # Função para redimensionar a imagem mantendo a proporção e alta qualidade
 def redimensionar_imagem(caminho_imagem, largura_max=900, altura_max=900):
@@ -13,8 +14,8 @@ def redimensionar_imagem(caminho_imagem, largura_max=900, altura_max=900):
             proporcao = min(largura_max / img.width, altura_max / img.height)
             novo_tamanho = (int(img.width * proporcao), int(img.height * proporcao))
             img = img.resize(novo_tamanho, Image.LANCZOS)  # Redimensiona com alta qualidade
-        img.save(caminho_imagem, optimize=True, quality=85)  # Comprimir a imagem para melhorar desempenho
         return img
+    
 
 # Função para desenhar o cabeçalho
 def desenhar_cabecalho(c, largura_pagina, altura_pagina, caminho_imagem_cabecalho=None):
@@ -42,16 +43,10 @@ def gerar_relatorio_pdf(titulo_principal, grupos_fotos):
         titulo_grupo = grupo['titulo']
         fotos = grupo['fotos']
 
-# Inicialize `y_inicial_bloco` no início de cada grupo
-        y_inicial_bloco = y_pos  # Agora `y_inicial_bloco` é inicializado corretamente
-
-        # Verificar se há espaço para pelo menos uma linha de imagens junto com o título
-        if y_pos - 60 < 140:  # Se não houver espaço suficiente para o título + imagens
-            c.showPage()  # Adicionar uma nova página
-            desenhar_cabecalho(c, largura_pagina, altura_pagina, caminho_imagem_cabecalho)  # Redesenhar o cabeçalho
-            y_pos = altura_pagina - 110  # Resetar y_pos para começar abaixo do cabeçalho
-            y_inicial_bloco = y_pos  # Inicializar y_inicial_bloco ao criar uma nova página
-
+        if y_pos - 60 < 140:
+            c.showPage()  # Nova página
+            desenhar_cabecalho(c, largura_pagina, altura_pagina, caminho_imagem_cabecalho)
+            y_pos = altura_pagina - 110
 
         c.setFont("Helvetica-Bold", 14)
         c.drawCentredString(largura_pagina / 2, y_pos, titulo_grupo)
@@ -93,13 +88,11 @@ def gerar_relatorio_pdf(titulo_principal, grupos_fotos):
     c.save()
     return nome_pdf
 
-# Variável global para armazenar o status da geração do PDF
-pdf_gerado = None
-
-# Função para gerar o PDF em uma thread separada
+# Função para gerar o PDF de forma assíncrona
 def gerar_pdf_em_thread(titulo_principal, grupos_fotos):
-    global pdf_gerado
     pdf_gerado = gerar_relatorio_pdf(titulo_principal, grupos_fotos)
+    ui.notify(f"PDF '{pdf_gerado}' foi gerado com sucesso!")
+    ui.download(pdf_gerado, 'Clique aqui para baixar o PDF gerado')
 
 # Função para iniciar a geração do PDF em uma thread separada
 def gerar_pdf_assincrono(titulo_principal_input, grupos_fotos):
@@ -110,22 +103,15 @@ def gerar_pdf_assincrono(titulo_principal_input, grupos_fotos):
     if not grupos_fotos:
         ui.notify("Por favor, adicione ao menos um grupo de fotos.")
         return
-
-    # Executar a geração do PDF em uma thread separada
     thread = threading.Thread(target=gerar_pdf_em_thread, args=(titulo_principal, grupos_fotos))
     thread.start()
-
-    # Notificar o usuário que o PDF está sendo gerado
     ui.notify("O PDF está sendo gerado, por favor aguarde...")
 
-# Função para verificar se o PDF foi gerado e atualizar a interface
-def verificar_pdf():
-    global pdf_gerado
-    if pdf_gerado:
-        # Atualize a interface agora que o PDF foi gerado
-        ui.notify(f"PDF '{pdf_gerado}' foi gerado com sucesso!")
-        ui.download(pdf_gerado, 'Clique aqui para baixar o PDF gerado')
-        pdf_gerado = None  # Resetar para evitar notificações repetidas
+# Função para limpar a pasta "uploads"
+def limpar_pastas_upload():
+    if os.path.exists("uploads"):
+        shutil.rmtree("uploads")
+    os.makedirs("uploads")
 
 # Interface gráfica usando NiceGUI
 def iniciar_interface():
@@ -192,15 +178,6 @@ def iniciar_interface():
     with ui.card():
         ui.button('Resetar tudo', on_click=resetar_projeto).classes('bg-red-500 text-white')
 
-    # Criar um timer para verificar se o PDF foi gerado e atualizar a interface
-    ui.timer(interval=1.0, callback=verificar_pdf)  # Verifica a cada 1 segundo
-
     ui.run()
-
-# Função para limpar a pasta "uploads"
-def limpar_pastas_upload():
-    if os.path.exists("uploads"):
-        shutil.rmtree("uploads")
-    os.makedirs("uploads")
 
 iniciar_interface()
